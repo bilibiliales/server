@@ -19,24 +19,22 @@ import java.util.Map;
 public class AppController {
     @Autowired
     private AlipayConfig alipayConfig;
-
-    //构造支付宝配置
-    AlipayClient alipayClient = new DefaultAlipayClient(
-            "https://openapi-sandbox.dl.alipaydev.com/gateway.do",
-            alipayConfig.getAppId(),
-            alipayConfig.getAppPrivateKey(),
-            "JSON",
-            "UTF-8",
-            alipayConfig.getAlipayPublicKey(),
-            "RSA2"
-    );
-
     @PostMapping("/createTrade")
     public void createTrade(
             //@RequestParam String goodsName,
             @RequestParam String userId,
             HttpServletResponse response) {
         try {
+            //构造支付宝配置
+            AlipayClient alipayClient = new DefaultAlipayClient(
+                    "https://openapi-sandbox.dl.alipaydev.com/gateway.do",
+                    alipayConfig.getAppId(),
+                    alipayConfig.getAppPrivateKey(),
+                    "JSON",
+                    "UTF-8",
+                    alipayConfig.getAlipayPublicKey(),
+                    "RSA2"
+            );
             //获取商品价格
             double totalAmount = 30.00;
             //生成订单号
