@@ -1,20 +1,18 @@
 package com.alipay.server.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alipay.api.domain.AlipayTradePagePayModel;
+import com.alipay.api.internal.util.AlipaySignature;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.alipay.server.config.AlipayConfig;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
-import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.alipay.api.AlipayApiException;
+import com.alipay.server.payment.RequestTrade;
 
-import static com.alipay.api.AlipayConstants.CHARSET;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/alipay")
@@ -22,54 +20,59 @@ public class AppController {
     @Autowired
     private AlipayConfig alipayConfig;
 
+    //构造支付宝配置
+    AlipayClient alipayClient = new DefaultAlipayClient(
+            "https://openapi-sandbox.dl.alipaydev.com/gateway.do",
+            alipayConfig.getAppId(),
+            alipayConfig.getAppPrivateKey(),
+            "JSON",
+            "UTF-8",
+            alipayConfig.getAlipayPublicKey(),
+            "RSA2"
+    );
+
     @PostMapping("/createTrade")
     public void createTrade(
             //@RequestParam String goodsName,
             @RequestParam String userId,
             HttpServletResponse response) {
-
         try {
             //获取商品价格
-            Double totalAmount = 30.00;
+            double totalAmount = 30.00;
             //生成订单号
             String outTradeNo = "zdjlales" + System.currentTimeMillis() + userId;
             //商品名称（测试）
             String goodsName = "30天VIP";
-            //构造请求体
-            AlipayClient alipayClient = new DefaultAlipayClient(
-                    "https://openapi-sandbox.dl.alipaydev.com/gateway.do",
-                    alipayConfig.getAppId(),
-                    alipayConfig.getAppPrivateKey(),
-                    "JSON",
-                    "UTF-8",
-                    alipayConfig.getAlipayPublicKey(),
-                    "RSA2"
-            );
-            //构造订单信息
-            AlipayTradePagePayModel model = new AlipayTradePagePayModel();
-            model.setOutTradeNo(outTradeNo);
-            model.setTotalAmount(totalAmount.toString());
-            model.setSubject(goodsName);
-            model.setProductCode("FAST_INSTANT_TRADE_PAY");
-            //发起支付宝请求
-            AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-            request.setBizModel(model);
-            request.setNotifyUrl(alipayConfig.getNotifyUrl());
-            request.setReturnUrl(alipayConfig.getReturnUrl());
-            try {
-                String form = alipayClient.pageExecute(request, "GET").getBody();
-                response.setContentType("text/html;charset=UTF-8");
-                response.getWriter().write(form);
-                response.getWriter().flush();
-                response.getWriter().close();
-                System.out.println(response);
-            } catch (AlipayApiException e) {
-                e.printStackTrace();
-            }
+            //发起支付
+            RequestTrade requestTrade = new RequestTrade(outTradeNo,totalAmount,goodsName,response,alipayClient,alipayConfig.getNotifyUrl(),alipayConfig.getReturnUrl());
         } catch (Exception e) {
-            JSONObject error = new JSONObject();
-            error.put("error", "Internal Server Error");
-            error.put("message", e.getMessage());
+            e.printStackTrace();
         }
     }
+
+    @PostMapping("/notify")
+    public void notify(
+            @RequestParam String out_trade_no,
+            @RequestParam String trade_status,
+            HttpServletRequest request) throws Exception {
+        try {
+            Map<String, String> params = new HashMap<>();
+            Map<String, String[]> requestParams = request.getParameterMap();
+            for (String name : requestParams.keySet()) {
+                params.put(name, request.getParameter(name));
+            }
+            boolean signVerified = AlipaySignature.rsaCheckV1(params, alipayConfig.getAlipayPublicKey(), "UTF-8" , "RSA2");
+            if(signVerified) {
+                System.out.println("sign success");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @GetMapping("/return")
+    public String returnTrade() {
+        return "success";
+    }
+
 }
