@@ -19,24 +19,7 @@ public class BookDigest {
         String url = "https://spark-api-open.xf-yun.com/v1/chat/completions";
 
         // 创建请求体对象
-        RequestBody requestBody = new RequestBody();
-        requestBody.setModel("4.0Ultra");
-        requestBody.setUser("user_id");
-
-        // 创建messages
-        RequestBody.Message message = new RequestBody.Message();
-        message.setRole("user");
-        message.setContent("请为未读过《"+bookName+"》这本书的顾客提供一段摘要，仅提供这本书的摘要，不要剧透");
-        requestBody.setMessages(List.of(message));
-
-        // 创建tools
-        RequestBody.Tool tool = new RequestBody.Tool();
-        tool.setType("web_search");
-        RequestBody.WebSearch webSearch = new RequestBody.WebSearch();
-        webSearch.setEnable(true);
-        webSearch.setSearchMode("normal");
-        tool.setWebSearch(webSearch);
-        requestBody.setTools(List.of(tool));
+        RequestBody requestBody = getRequestBody(bookName);
 
         // 设置请求头
         HttpHeaders headers = new HttpHeaders();
@@ -55,11 +38,33 @@ public class BookDigest {
                     return apiResponse.getChoices().get(0).getMessage().getContent();
                 }
             }
-            throw new RuntimeException("API响应异常：" + response.getBody().getMessage());
+            throw new RuntimeException("API响应异常：" + response.getBody());
         } catch (Exception e) {
-            e.printStackTrace();
             return "API响应异常：" + e.getMessage();
         }
+    }
+
+    // 构造请求体
+    private static RequestBody getRequestBody(String bookName) {
+        RequestBody requestBody = new RequestBody();
+        requestBody.setModel("4.0Ultra");
+        requestBody.setUser("user_id");
+
+        // 创建messages
+        RequestBody.Message message = new RequestBody.Message();
+        message.setRole("user");
+        message.setContent("请为未读过《"+ bookName +"》这本书的顾客提供一段摘要，仅提供这本书的摘要，不要剧透");
+        requestBody.setMessages(List.of(message));
+
+        // 创建tools
+        RequestBody.Tool tool = new RequestBody.Tool();
+        tool.setType("web_search");
+        RequestBody.WebSearch webSearch = new RequestBody.WebSearch();
+        webSearch.setEnable(true);
+        webSearch.setSearchMode("normal");
+        tool.setWebSearch(webSearch);
+        requestBody.setTools(List.of(tool));
+        return requestBody;
     }
 
     // 请求体内嵌类
