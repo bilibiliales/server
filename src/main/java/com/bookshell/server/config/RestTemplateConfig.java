@@ -1,4 +1,4 @@
-package com.alipay.server.config;
+package com.bookshell.server.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.alipay.server.config;
+package com.bookshell.server.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 @Component

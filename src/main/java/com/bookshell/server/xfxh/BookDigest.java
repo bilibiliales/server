@@ -1,4 +1,4 @@
-package com.alipay.server.xfxh;
+package com.bookshell.server.xfxh;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
