@@ -42,75 +42,8 @@ public class MsgController {
         return ResponseEntity.ok(response);
     }
 
-    // 管理员配置接口组
-    @RestController
-    @RequestMapping("/admin")
-    public class AdminController {
-
-        // 更新全局禁言
-        @PostMapping("/global-mute")
-        public ResponseEntity<Void> setGlobalMute(
-                @RequestParam boolean enabled,
-                @RequestHeader("X-Admin-Token") String token
-        ) {
-            msgBoardService.updateConfig("msgDisabled", enabled, validateAdminToken(token));
-            return ResponseEntity.ok().build();
-        }
-
-        // 更新自动拉黑
-        @PostMapping("/auto-block")
-        public ResponseEntity<Void> setAutoBlock(
-                @RequestParam boolean enabled,
-                @RequestHeader("X-Admin-Token") String token
-        ) {
-            msgBoardService.updateConfig("autoBlocked", enabled, validateAdminToken(token));
-            return ResponseEntity.ok().build();
-        }
-
-        // 更新昵称黑名单
-        @PostMapping("/nickname-blacklist")
-        public ResponseEntity<Void> updateNicknameBlacklist(
-                @RequestBody Set<String> words,
-                @RequestHeader("X-Admin-Token") String token
-        ) {
-            msgBoardService.updateBlacklist(words, "nickname", validateAdminToken(token));
-            return ResponseEntity.ok().build();
-        }
-
-        // 更新消息黑名单
-        @PostMapping("/message-blacklist")
-        public ResponseEntity<Void> updateMessageBlacklist(
-                @RequestBody Set<String> phrases,
-                @RequestHeader("X-Admin-Token") String token
-        ) {
-            msgBoardService.updateBlacklist(phrases, "msg", validateAdminToken(token));
-            return ResponseEntity.ok().build();
-        }
-
-        // 设置置顶消息
-        @PostMapping("/top-message")
-        public ResponseEntity<Void> setTopMessage(
-                @RequestParam String messageId,
-                @RequestHeader("X-Admin-Token") String token
-        ) {
-            msgBoardService.updateTopMessage(messageId, validateAdminToken(token));
-            return ResponseEntity.ok().build();
-        }
-
-        // 删除留言
-        @DeleteMapping("/messages/{messageId}")
-        public ResponseEntity<Void> deleteMessage(
-                @PathVariable String messageId,
-                @RequestHeader("X-Admin-Token") String token
-        ) {
-            msgBoardService.deleteMessage(messageId, validateAdminToken(token));
-            return ResponseEntity.noContent().build();
-        }
-    }
-
-    // 辅助方法
+    // 管理员验签
     private boolean validateAdminToken(String token) {
-        // 实际生产环境应使用JWT验证等安全机制
         return token != null && token.equals("SECRET_ADMIN_KEY");
     }
 
