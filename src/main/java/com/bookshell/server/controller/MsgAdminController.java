@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/msg/admin")
 public class MsgAdminController {

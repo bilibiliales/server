@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>留言板测试</title>
+    <style>
+        body { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .message { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+        .top-message { background: #ffeeba; }
+        form { margin: 20px 0; }
+        input, textarea { display: block; margin: 5px 0; width: 300px; }
+    </style>
+</head>
+<body>
+    <h2>留言列表</h2>
+    <div id="messages"></div>
+
+    <h2>发布留言</h2>
+    <form id="postForm">
+        <input type="text" id="nickname" placeholder="昵称" required>
+        <textarea id="content" placeholder="留言内容" required></textarea>
+        <button type="submit">提交</button>
+    </form>
+
+    <script>
+        // 基础配置
+        const API_BASE = 'http://localhost:8080/api/msg';
+        const ADMIN_TOKEN = 'SECRET_ADMIN_KEY';
+
+        // 加载留言列表
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_BASE}/messages`);
+                const data = await response.json();
+                renderMessages(data);
+            } catch (error) {
+                console.error('加载失败:', error);
+            }
+        }
+
+        // 渲染留言
+        function renderMessages(data) {
+            const container = document.getElementById('messages');
+            container.innerHTML = '';
+
+            // 置顶留言
+            if(data.topMessage) {
+                const div = createMessageElement(data.topMessage, true);
+                container.appendChild(div);
+            }
+
+            // 普通留言
+            data.recentMessages.forEach(msg => {
+                const div = createMessageElement(msg);
+                container.appendChild(div);
+            });
+        }
+
+        // 创建留言元素
+        function createMessageElement(msg, isTop = false) {
+            const div = document.createElement('div');
+            div.className = `message ${isTop ? 'top-message' : ''}`;
+            div.innerHTML = `
+                <strong>${msg.nickname}</strong>
+                <p>${msg.content}</p>
+                <small>${new Date(msg.timestamp).toLocaleString()}</small>
+            `;
+            return div;
+        }
+
+        // 提交留言
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            // 管理员权限判断
+            const nickname = document.getElementById('nickname').value;
+            if(nickname.toLowerCase() === 'admin') {
+                headers['X-Admin-Token'] = ADMIN_TOKEN;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/messages`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        nickname: nickname,
+                        content: document.getElementById('content').value
+                    })
+                });
+
+                const result = await response.json();
+                if(result.success) {
+                    alert('提交成功');
+                    loadMessages();
+                } else {
+                    alert('提交失败：可能包含屏蔽词或权限不足');
+                }
+            } catch (error) {
+                console.error('提交失败:', error);
+            }
+        });
+
+        // 初始化加载
+        loadMessages();
+    </script>
+</body>
+</html>
