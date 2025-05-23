@@ -2,14 +2,12 @@ package com.bookshell.server.controller;
 
 import com.alipay.api.internal.util.AlipaySignature;
 import com.bookshell.server.config.XfxhConfig;
-import com.bookshell.server.service.AlipayService;
+import com.bookshell.server.alipay.AlipayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.bookshell.server.config.AlipayConfig;
-import com.alipay.api.AlipayClient;
-import com.alipay.api.DefaultAlipayClient;
 import com.bookshell.server.xfxh.BookDigest;
 
 import java.util.HashMap;

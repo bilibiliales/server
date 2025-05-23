@@ -1,9 +1,9 @@
+// 用于生成书籍概要的api
+// 调用模型：讯飞星火4.0Ultra
 package com.bookshell.server.xfxh;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

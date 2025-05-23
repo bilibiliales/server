@@ -1,4 +1,4 @@
-package com.bookshell.server.service;
+package com.bookshell.server.alipay;
 
 import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayApiException;
