@@ -3,6 +3,7 @@ package com.bookshell.server.alipay;
 
 import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayApiException;
+import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipaySystemOauthTokenRequest;
 import com.alipay.api.request.AlipayUserInfoShareRequest;
 import com.alipay.api.response.AlipaySystemOauthTokenResponse;
@@ -14,21 +15,23 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class AlipayAuthService {
 
-    private final AlipayClient alipayClient;
+    private final AlipayClient alipayAuthClient;
     private final RedisTemplate<String, Object> redisTemplate;
     private final AlipayConfig alipayConfig;
 
     @Autowired
-    public AlipayAuthService(AlipayClient alipayClient,
+    public AlipayAuthService(AlipayClient alipayAuthClient,
                              RedisTemplate<String, Object> redisTemplate,
                              AlipayConfig alipayConfig) {
-        this.alipayClient = alipayClient;
+        this.alipayAuthClient = alipayAuthClient;
         this.redisTemplate = redisTemplate;
         this.alipayConfig = alipayConfig;
     }
@@ -46,7 +49,7 @@ public class AlipayAuthService {
     }
 
     // 返回查询的用户的OpenId及昵称+图片信息（如有）
-    public String handleCallback(String authCode, String requestId) throws AlipayApiException {
+    public Map handleCallback(String authCode, String requestId) throws AlipayApiException {
         // 验证请求ID有效性
         if (!redisTemplate.hasKey("alipay:req:" + requestId)) {
             throw new RuntimeException("Invalid login request");
@@ -56,27 +59,49 @@ public class AlipayAuthService {
         AlipaySystemOauthTokenRequest tokenRequest = new AlipaySystemOauthTokenRequest();
         tokenRequest.setCode(authCode);
         tokenRequest.setGrantType("authorization_code");
-        AlipaySystemOauthTokenResponse tokenResponse = alipayClient.execute(tokenRequest);
+
+        // 获取Access_token
+        AlipaySystemOauthTokenResponse tokenResponse = alipayAuthClient.execute(tokenRequest);
 
         if (!tokenResponse.isSuccess()) {
-            throw new RuntimeException("Failed to get access token: " + tokenResponse.getSubMsg());
+            throw new RuntimeException("获取access_token失败: " + tokenResponse.getSubMsg());
         }
 
-        // 尝试获取用户信息
-        try {
-            AlipayUserInfoShareRequest userInfoRequest = new AlipayUserInfoShareRequest();
-            AlipayUserInfoShareResponse userInfoResponse = alipayClient.execute(userInfoRequest);
+        System.out.println(tokenResponse.getParams());
+        // 验签
+        boolean signVerified = AlipaySignature.rsaCheckV1(
+                tokenResponse.getParams(), // 支付宝返回的所有参数
+                alipayConfig.getAuthPublicKey(), // 支付宝公钥
+                "UTF-8",
+                "RSA2"
+        );
+        if (!signVerified) {
+            throw new RuntimeException("支付宝返回数据签名验证失败");
+        }
 
-            if (userInfoResponse.isSuccess() && userInfoResponse.getUserId() != null) {
-                // 用户授权了信息，返回用户ID
-                return userInfoResponse.getUserId();
+        // 获取用户信息
+        String openid = tokenResponse.getOpenId();
+        String accessToken = tokenResponse.getAccessToken();
+        if (openid == null) {
+            throw new RuntimeException("获取openid失败");
+        }
+        try{
+            AlipayUserInfoShareRequest request = new AlipayUserInfoShareRequest();
+            AlipayUserInfoShareResponse response = alipayAuthClient.execute(request,accessToken);
+            if(!response.isSuccess()){
+                throw new RuntimeException("获取用户昵称+头像失败");
             }
-        } catch (AlipayApiException e) {
-            // 捕获异常，继续返回用户ID
-            System.err.println("Failed to get user info: " + e.getMessage());
+            Map<String, String> userInfo = new HashMap<>();
+            userInfo.put("openid", openid);
+            userInfo.put("nickName", response.getNickName());
+            userInfo.put("avatar", response.getAvatar());
+            return userInfo;
+        } catch (Exception e) {
+            Map<String, String> userInfo = new HashMap<>();
+            userInfo.put("openid", openid);
+            userInfo.put("nickName", null);
+            userInfo.put("avatar", null);
+            return userInfo;
         }
-
-        // 返回用户ID
-        return tokenResponse.getUserId();
     }
 }

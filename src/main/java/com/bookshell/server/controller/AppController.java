@@ -73,7 +73,7 @@ public class AppController {
                 System.out.println("验签通过");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new Exception("验签不通过");
         }
     }
 

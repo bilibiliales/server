@@ -46,16 +46,21 @@ public class AccountController {
             @RequestParam String auth_code,
             @RequestParam String state) {
         try {
-            String alipayUserId = alipayAuthService.handleCallback(auth_code, state);
-            String userId = userService.getUidByAlipay(alipayUserId);
+            Map<String, String> alipayUserInfo = alipayAuthService.handleCallback(auth_code, state);
+            String userId = userService.getUidByAlipay(alipayUserInfo.get("openid"));
 
             String jwt = generateJwt(userId);
             storeSession(jwt, userId);
 
             // 返回用户登录会话ID（JWT）
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("user_id", userId);
+            responseBody.put("nick_name", alipayUserInfo.get("nickName"));
+            responseBody.put("avatar_url", alipayUserInfo.get("avatar"));
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.AUTHORIZATION, jwt)
-                    .body(Collections.singletonMap("user_id", userId));
+                    .body(responseBody);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -88,7 +93,7 @@ public class AccountController {
                 .compact();
     }
 
-    // redis存储令牌
+    // redis存储令牌（有效期均为1小时）
     private void storeSession(String jwt, String userId) {
         redisTemplate.opsForValue().set(
                 "session:" + jwt,

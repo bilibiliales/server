@@ -17,11 +17,14 @@
         方法：GET.
         请求地址：http://localhost:8080/auth/alipay
         返回示例：
+        {
+            "auth_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004113670539&scope=auth_user&redirect_uri=http%3A%2F%2F10.200.92.146%3A8080%2Fauth%2Fcallback&state=dd79ce5a-b8d1-4bc0-96e9-528e036608c2"
+        }
 
     访问登录URL：
         方法：GET
         请求地址：登录URL
-        示例请求：https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004113670539&scope=auth_user&redirect_uri=http%3A%2F%2F47.96.116.182%3A8085%2FauthCallBack&state=123456789
+        示例请求：https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004113670539&scope=auth_user&redirect_uri=http%3A%2F%2F10.200.92.146%3A8080%2Fauth%2Fcallback&state=dd79ce5a-b8d1-4bc0-96e9-528e036608c2
         支付宝回调示例：
         {
           auth_code: '9786bd68a4724d8f8c1e93bf3b25MX83',
@@ -32,11 +35,24 @@
           scope: 'auth_user',
           alipay_token: ''
         }
-        支付宝返回地址示例：http://47.96.116.182:8085/authCallBack?auth_code=9786bd68a4724d8f8c1e93bf3b25MX83&state=123456789&app_id=2021004113670539&source=alipay_wallet&userOutputs=auth_user&scope=auth_user&alipay_token=
+        支付宝返回地址示例：http://10.200.92.146:8080/auth/callback?auth_code=f0ab1a40283c4d1ca62f594552abFD83&state=dd79ce5a-b8d1-4bc0-96e9-528e036608c2&app_id=2021004113670539&source=alipay_wallet&userOutputs=auth_user&scope=auth_user&alipay_token=
     登录回调URL：
         方法：登录成功自动回调（GET）
         请求地址：http://localhost:8080/auth/callback
         请求体携带参数（回调时自动填写）：auth_code、state、app_id、source、userOutputs、scope
+        示例换取access_token和openid结果：
+        {
+            "alipay_system_oauth_token_response":{
+                "access_token":"authusrB60c6c42b28524c2d9fc52835c3a4cX83",
+                "auth_start":"2025-05-24 20:18:53",
+                "expires_in":1296000,
+                "re_expires_in":2592000,
+                "refresh_token":"authusrB5b807e61b5b54125a834a3f10c499X83",
+                "open_id":"083dALza2Yowfx4P-z2Ut1FpAQjtjJ-_sW8m87-yqXIfKsb"
+            },
+            "sign":"L86RghAPSOwDr7K07Xj12mbGYnPMcaoZReU+vB91BD0SU6mV+Q/pBk29G5t9Xozv0T3uKQC8ut5Wp+9N3KlJIEnzfXNHeGjSqvbO4CZkhuJqJidiAdoBHzr3mBoepCLntq8VjKstTdxUhmSgj3i7tik04lCtcdc60p/le8Hytc/jf+dJg7/vWGjfCQvzoAm8gVpKnGRHPVdArbTHSpjpbxqbQhupAJiCtT8BT0eNZVxy3zQKQY87OqWMT1MnbvRHCqU1OK5nPMT0jiSoqy+HPfJ/oO9jYcyueMj+fAgTWZvk9FhquJDI3rD8niMPll8dZBI02XdeAPZn1soIFArpgQ=="
+        }
+        示例使用access_token查询昵称和头像结果：
 使用用户名+密码登录：
 
 

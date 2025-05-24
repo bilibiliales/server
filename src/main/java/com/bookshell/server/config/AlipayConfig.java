@@ -19,6 +19,33 @@ public class AlipayConfig {
     private String authPublicKey;
     private String authCallbackUrl;
     private String gateAuthUrl;
+    private String shareAuthUrl;
+
+    @Bean
+    public AlipayClient alipayClient() {
+        return new DefaultAlipayClient(
+                gatewayUrl,
+                appId,
+                appPrivateKey,
+                "JSON",
+                "UTF-8",
+                alipayPublicKey,
+                "RSA2"
+        );
+    }
+
+    @Bean
+    public AlipayClient alipayAuthClient() {
+        return new DefaultAlipayClient(
+                shareAuthUrl,
+                authAppId,
+                authPrivateKey,
+                "JSON",
+                "UTF-8",
+                authPublicKey,
+                "RSA2"
+        );
+    }
 
 
     public String getAppId() {
@@ -69,19 +96,6 @@ public class AlipayConfig {
         this.gatewayUrl = gatewayUrl;
     }
 
-    @Bean
-    public AlipayClient alipayClient() {
-        return new DefaultAlipayClient(
-                gatewayUrl,
-                appId,
-                appPrivateKey,
-                "JSON",
-                "UTF-8",
-                alipayPublicKey,
-                "RSA2"
-        );
-    }
-
     public String getAuthCallbackUrl() {
         return authCallbackUrl;
     }
@@ -120,5 +134,13 @@ public class AlipayConfig {
 
     public void setAuthPublicKey(String authPublicKey) {
         this.authPublicKey = authPublicKey;
+    }
+
+    public String getShareAuthUrl() {
+        return shareAuthUrl;
+    }
+
+    public void setShareAuthUrl(String shareAuthUrl) {
+        this.shareAuthUrl = shareAuthUrl;
     }
 }
