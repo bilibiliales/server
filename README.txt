@@ -3,6 +3,43 @@
     产品名/Service类：设置各个实际处理逻辑
     config类：定义各个产品的DTO及配置文件数据
 
+验签规则：
+    现已启用jwt签名验证，如需正常访问被加入拦截器的controller需要在前端包含有效的签名，示例：
+    Authorization: Bearer <JWT>
+
+互联登录：
+使用支付宝互联登录：
+    流程：用户选择支付宝授权登录创建登录请求ID->用户使用URL跳转登录支付宝->支付宝回调消息包含访问令牌->使用访问令牌获取OpenID(支付宝账号唯一凭证)->验证AppID后返回登录会话ID
+    登录URL：https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=APPID&scope=SCOPE&redirect_uri=ENCODED_URLstate=STATE
+    *其中APPID可以在AlipayConfig.java中获取，ENCODED_URL设置为Controller层处理登录请求的路由，STATE会原封不动的返回，需设置为登录请求ID
+
+    使用登录请求ID生成登录URL：
+        方法：GET.
+        请求地址：http://localhost:8080/auth/alipay
+        返回示例：
+
+    访问登录URL：
+        方法：GET
+        请求地址：登录URL
+        示例请求：https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004113670539&scope=auth_user&redirect_uri=http%3A%2F%2F47.96.116.182%3A8085%2FauthCallBack&state=123456789
+        支付宝回调示例：
+        {
+          auth_code: '9786bd68a4724d8f8c1e93bf3b25MX83',
+          state: '123456789',
+          app_id: '2021004113670539',
+          source: 'alipay_wallet',
+          userOutputs: 'auth_user',
+          scope: 'auth_user',
+          alipay_token: ''
+        }
+        支付宝返回地址示例：http://47.96.116.182:8085/authCallBack?auth_code=9786bd68a4724d8f8c1e93bf3b25MX83&state=123456789&app_id=2021004113670539&source=alipay_wallet&userOutputs=auth_user&scope=auth_user&alipay_token=
+    登录回调URL：
+        方法：登录成功自动回调（GET）
+        请求地址：http://localhost:8080/auth/callback
+        请求体携带参数（回调时自动填写）：auth_code、state、app_id、source、userOutputs、scope
+使用用户名+密码登录：
+
+
 使用留言板API：
     获取留言板信息：
         方法：GET，
@@ -39,7 +76,7 @@
         请求头：
             必填：
             Content-Type: application/json
-            选填：
+            选填（普通用户可不填，填写正确后可以发送有管理员权限标识的留言）：
             X-Admin-Token: JWT生成的token，正确令牌拥有管理员权限（测试时填写"SECRET_ADMIN_KEY"）
         请求体示例：
         {

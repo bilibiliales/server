@@ -14,6 +14,11 @@ public class AlipayConfig {
     private String notifyUrl;
     private String returnUrl;
     private String gatewayUrl;
+    private String authAppId;
+    private String authPrivateKey;
+    private String authPublicKey;
+    private String authCallbackUrl;
+    private String gateAuthUrl;
 
 
     public String getAppId() {
@@ -75,5 +80,45 @@ public class AlipayConfig {
                 alipayPublicKey,
                 "RSA2"
         );
+    }
+
+    public String getAuthCallbackUrl() {
+        return authCallbackUrl;
+    }
+
+    public void setAuthCallbackUrl(String authCallbackUrl) {
+        this.authCallbackUrl = authCallbackUrl;
+    }
+
+    public String getGateAuthUrl() {
+        return gateAuthUrl;
+    }
+
+    public void setGateAuthUrl(String gateAuthUrl) {
+        this.gateAuthUrl = gateAuthUrl;
+    }
+
+    public String getAuthAppId() {
+        return authAppId;
+    }
+
+    public void setAuthAppId(String authAppId) {
+        this.authAppId = authAppId;
+    }
+
+    public String getAuthPrivateKey() {
+        return authPrivateKey;
+    }
+
+    public void setAuthPrivateKey(String authPrivateKey) {
+        this.authPrivateKey = authPrivateKey;
+    }
+
+    public String getAuthPublicKey() {
+        return authPublicKey;
+    }
+
+    public void setAuthPublicKey(String authPublicKey) {
+        this.authPublicKey = authPublicKey;
     }
 }

@@ -2,7 +2,7 @@ package com.bookshell.server.controller;
 
 import com.alipay.api.internal.util.AlipaySignature;
 import com.bookshell.server.config.XfxhConfig;
-import com.bookshell.server.alipay.AlipayService;
+import com.bookshell.server.alipay.CreateTrade;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +16,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class AppController {
-    private final AlipayService alipayService;
+    private final CreateTrade createTrade;
     private final AlipayConfig alipayConfig;
     private final XfxhConfig xfxhConfig;
     private final BookDigest bookDigest;
 
     @Autowired
-    public AppController(AlipayService alipayService, AlipayConfig alipayConfig,
+    public AppController(CreateTrade createTrade, AlipayConfig alipayConfig,
                          XfxhConfig xfxhConfig, BookDigest bookDigest) {
-        this.alipayService = alipayService;
+        this.createTrade = createTrade;
         this.alipayConfig = alipayConfig;
         this.xfxhConfig = xfxhConfig;
         this.bookDigest = bookDigest;
@@ -45,13 +45,13 @@ public class AppController {
             HttpServletResponse response) {
         try {
             // 生成订单号
-            String outTradeNo = "zdjlales" + System.currentTimeMillis() + userId;
+            String outTradeNo = "bookshell" + System.currentTimeMillis() + userId;
             // 商品名称（测试）
-            String goodsName = "30天VIP";
+            String goodsName = "商品名称";
             // 商品价格
             double totalAmount = 30.00;
 
-            alipayService.createTrade(outTradeNo, totalAmount, goodsName, response);
+            createTrade.createTrade(outTradeNo, totalAmount, goodsName, response);
         } catch (Exception e) {
             throw new RuntimeException("创建支付宝交易失败", e);
         }
@@ -70,7 +70,7 @@ public class AppController {
             }
             boolean signVerified = AlipaySignature.rsaCheckV1(params, alipayConfig.getAlipayPublicKey(), "UTF-8" , "RSA2");
             if(signVerified) {
-                System.out.println("sign success");
+                System.out.println("验签通过");
             }
         } catch (Exception e) {
             e.printStackTrace();

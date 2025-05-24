@@ -1,3 +1,4 @@
+// 创建支付宝订单服务类
 package com.bookshell.server.alipay;
 
 import com.alipay.api.AlipayClient;
@@ -13,13 +14,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class AlipayService {
+public class CreateTrade {
 
     private final AlipayClient alipayClient;
     private final AlipayConfig alipayConfig;
 
     @Autowired
-    public AlipayService(AlipayClient alipayClient, AlipayConfig alipayConfig) {
+    public CreateTrade(AlipayClient alipayClient, AlipayConfig alipayConfig) {
         this.alipayClient = alipayClient;
         this.alipayConfig = alipayConfig;
     }
